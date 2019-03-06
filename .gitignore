@@ -1,0 +1,10 @@
+job/spiders/toscrape_css.py
+job/spiders/toscrape_xpath.py
+job/spiders/author.py
+
+*pyc
+quotes.jl
+quotes.json
+quotes2.json
+author.jl
+/.idea
