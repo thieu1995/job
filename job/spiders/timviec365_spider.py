@@ -16,34 +16,38 @@ class Timviec365Spider(TemplateSpider):
         # follow pagination links
         next_link = response.css(".pagination_wrap a.next::attr(href)").get()
         if next_link is not None:
-            print("==========================Next Link: ", next_link)
             yield response.follow(url=next_link, callback=self.parse)
 
     def parse_job_detail(self, response):
         def extract_with_css(query):
             return response.css(query).get(default='').strip()
 
-        def extract_with_xpath(query):
-            return response.xpath(query).getall()
+        def extract_one_with_xpath(query):
+            return response.xpath(query).get(default='').strip()
 
-        # Save content
-        yield {
-            "job_title": extract_with_css(".box_tit_detail .right_tit h1::text"),
-            "company_title": extract_with_css(".box_tit_detail .right_tit h2 a::text"),
-            "updated_date": response.css(".xacthuc_tit p::text").getall()[1].strip().split()[3],
-            "details_job": {
-                "work_location": response.css(".dd_tuyen a::text").getall(),
-                "category": extract_with_xpath(".//div[b/text() = 'Ngành nghề:']/span/a/text()"),
-                "level": extract_with_xpath(".//div[b/text() = 'Chức vụ:']/span/text()"),
-                "salary": extract_with_xpath(".//p[text() = 'Mức lương: ']/span/text()"),
-                "deadline": extract_with_xpath(".//p[text() = 'Hạn nộp hồ sơ: ']/span/text()"),
-                "experience": extract_with_xpath(".//div[b/text() = 'Kinh nghiệm:']/span/text()")
-            },
-            "job_description": response.xpath(".//div[contains(@class, 'box_mota')]").getall(),
-            "job_requirement": response.xpath(".//div[contains(@class, 'box_yeucau')]").getall(),
-            #"other_information": response.xpath(".//h3[text() = 'Yêu cầu hồ sơ']/following-sibling::div[1]").getall(),
+        def extract_formatted_with_xpath(query):
+            list_items = response.xpath(query).getall()
+            for i in range(len(list_items)):
+                list_items[i] = list_items[i].replace('\n', ' ').replace('\r', ' ').replace('\t', ' ').strip()
+            return list_items
 
-            "entitlements": response.xpath(".//div[contains(@class, 'box_quyenloi')]").getall(),
-            #"tags": response.xpath(".//div[span/text() = 'Job tags / Kỹ năng:']/a").getall(),
-        }
+        def extract_formatted_with_css(query):
+            list_items = response.css(query).getall()
+            for i in range(len(list_items)):
+                list_items[i] = list_items[i].replace('\n', ' ').replace('\r', ' ').replace('\t', ' ').strip()
+            return list_items
 
+        yield self.get_item(source_url=str(response.url),
+                            job_title=extract_with_css(".box_tit_detail .right_tit h1::text"),
+                            company_title=extract_with_css(".box_tit_detail .right_tit h2 a::text"),
+                            updated_date=response.css(".xacthuc_tit p::text").getall()[1].strip().split()[3],
+                            work_location=extract_formatted_with_css(".dd_tuyen a::text"),
+                            category=extract_formatted_with_xpath(".//div[b/text() = 'Ngành nghề:']/span/a/text()"),
+                            salary=extract_formatted_with_xpath(".//p[text() = 'Mức lương: ']/span/text()"),
+                            level=extract_one_with_xpath(".//div[b/text() = 'Chức vụ:']/span/text()"),
+                            deadline=extract_one_with_xpath(".//p[text() = 'Hạn nộp hồ sơ: ']/span/text()"),
+                            experience=extract_one_with_xpath(".//div[b/text() = 'Kinh nghiệm:']/span/text()"),
+                            job_description=extract_formatted_with_xpath(".//div[contains(@class, 'box_mota')]"),
+                            job_requirement=extract_formatted_with_xpath(".//div[contains(@class, 'box_yeucau')]"),
+                            other_information=extract_formatted_with_xpath(".//div[contains(@class, 'box_quyenloi')]"),
+                            tags='')

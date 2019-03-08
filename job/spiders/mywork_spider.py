@@ -24,27 +24,29 @@ class MyworkSpider(TemplateSpider):
         def extract_with_css(query):
             return response.css(query).get(default='').strip()
 
-        def extract_with_xpath(query):
-            return response.xpath(query).getall()
+        def extract_one_with_xpath(query):
+            return response.xpath(query).get(default='').strip()
 
-        # Save content
-        yield {
-            "job_title": extract_with_css("#detail-el h1.main-title span::text"),
-            "company_title": extract_with_css("#detail-el h2.desc-for-title span::text"),
-            "updated_date": response.xpath(".//p[strong/text() = 'Ngày duyệt: ']/text()").get(default=''),
-            "details_job": {
-                "work_location": extract_with_xpath(".//p[strong/text() = 'Địa điểm tuyển dụng: ']/span/a/text()"),
-                "category": extract_with_xpath(".//div[p/strong/text() = 'Ngành nghề:']/span/a/text()"),
-                "level": extract_with_xpath(".//p[strong/text() = 'Chức vụ:']/text()"),
-                "salary": extract_with_xpath(".//p[strong/text() = 'Mức lương:']/span/text()"),
-                "deadline": extract_with_xpath(".//p[strong/text() = 'Hạn nộp hồ sơ:']/span/text()"),
-                "experience": extract_with_xpath(".//p[strong/text() = 'Kinh nghiệm:']/text()")
-            },
-            "job_description": response.xpath(".//h3[text() = 'Mô tả công việc ']/following-sibling::div[1]").getall(),
-            "job_requirement": response.xpath(".//h3[text() = 'Yêu cầu công việc']/following-sibling::div[1]").getall(),
-            "other_information": response.xpath(".//h3[text() = 'Yêu cầu hồ sơ']/following-sibling::div[1]").getall(),
+        def extract_formatted_with_xpath(query):
+            list_items = response.xpath(query).getall()
+            for i in range(len(list_items)):
+                list_items[i] = list_items[i].replace('\n', ' ').replace('\r', ' ').replace('\t', ' ').strip()
+            return list_items
 
-            "entitlements": response.xpath(".//h3[text() = 'Quyền lợi được hưởng']/following-sibling::div[1]").getall(),
-            #"tags": response.xpath(".//div[span/text() = 'Job tags / Kỹ năng:']/a").getall(),
-        }
+        yield self.get_item(source_url=response.url,
+                            job_title=extract_with_css("#detail-el h1.main-title span::text"),
+                            company_title=extract_with_css("#detail-el h2.desc-for-title span::text"),
+                            updated_date=response.xpath(".//p[strong/text() = 'Ngày duyệt: ']/text()").get(default=''),
+                            work_location=extract_formatted_with_xpath(".//strong[contains(text(), 'Địa điểm tuyển dụng:')]/following-sibling::span[1]/a/text()"),
+                            category=extract_formatted_with_xpath(".//div[p/strong/text() = 'Ngành nghề:']/span/a/text()"),
+                            salary=extract_formatted_with_xpath(".//p[strong/text() = 'Mức lương:']/span/text()"),
+                            level=extract_one_with_xpath(".//p[strong/text() = 'Chức vụ:']/text()"),
+                            deadline=extract_one_with_xpath(".//p[strong/text() = 'Hạn nộp hồ sơ:']/span/text()"),
+                            experience=extract_one_with_xpath(".//p[strong/text() = 'Kinh nghiệm:']/text()"),
+                            job_description=extract_formatted_with_xpath(".//h3[text() = 'Mô tả công việc ']/following-sibling::div[1]"),
+                            job_requirement=extract_formatted_with_xpath(".//h3[text() = 'Yêu cầu công việc']/following-sibling::div[1]"),
+                            other_information=extract_formatted_with_xpath(".//h3[text() = 'Yêu cầu hồ sơ']/following-sibling::div[1]"),
+                            tags="")
+
+
 

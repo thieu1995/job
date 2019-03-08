@@ -65,34 +65,29 @@ là dùng javascript để chặn việc lấy link.
 - Xay dung thu 5
 
 
-6. Timviecnhanh
-- Xay dung thu 6
-- Trang nay van con nhieu loi va kha la it bai
-
-
-
-
-
-
 
 ## Chua lam 
 https://tuyencongnhan.vn
 https://1001vieclam.com/
 
+6. Timviecnhanh
+- Xay dung thu 6
+- Trang nay van con nhieu loi va kha la it bai
 
-5. Vieclam Tuoitre
+
+7. Vieclam Tuoitre
 - Xay dung thu 4
 - Giong y nguyen trang 1 (careerbuilder)
 
 
-6. Itviec
+8. Itviec
 - Xây dựng thứ 4
 - Điều đặc biệt ở trang này là nó là trang về IT nên rất ít job
 - Link ở các thẻ <a> đều có dạng không đầy đủ nên dùng: response.follow(), nhưng link ở trang pagination thì nó lại ở dạng 
 không đầy đủ nên dùng: scrapy.Request()
 - Do không hiển thị thông tin : lương (đăng nhập thì hiển thị) nên không dùng trang này nữa. 
 
-7. https://www.jobstreet.vn/
+9. https://www.jobstreet.vn/
 - Trang này khá là shit vì nó không có cấu trúc cố định, có lẫn tiếng anh và việt crawl hơi khó 
 - Bài viết thì không chi tiết, không phân mục rõ ràng như mấy trang bên trên.
 - Do vậy bỏ, không làm trang này 
@@ -107,3 +102,37 @@ không đầy đủ nên dùng: scrapy.Request()
 (name_website nam tren cai : scrapy list, name_file: ten file dau` ra)
     scrapy crawl careerbuilder -o careerbuilder.json
 ```
+
+## Create database
+```code 
+
+create database jobweb character set UTF8 collate utf8_bin;
+use jobweb
+
+CREATE TABLE job (
+  stt INT NOT NULL AUTO_INCREMENT,
+  source varchar(100),
+  source_url varchar(500),
+  import_datetime datetime,
+  job_title VARCHAR(500),
+  company_title VARCHAR(500),
+  updated_date VARCHAR(100),
+  work_location VARCHAR(500),
+  category VARCHAR(500),
+  salary VARCHAR(100),
+  level VARCHAR(100),
+  deadline VARCHAR(100),
+  experience VARCHAR(500),
+  job_description TEXT,
+  job_requirement TEXT,
+  other_information TEXT,
+  tags VARCHAR(500),
+  PRIMARY KEY (stt)
+)
+AUTO_INCREMENT = 1;
+
+```
+
+https://stackoverflow.com/questions/16566268/remove-all-line-breaks-from-a-long-string-of-text/16566356
+
+
